@@ -1,33 +1,19 @@
 import { FaHeart, FaRandom, FaSearch } from 'react-icons/fa'
 import { HiTrendingUp } from 'react-icons/hi'
 import Button from './components/Button'
-import { useEffect, useState } from 'react'
-import { type Daum, type GifsTypes } from './Types/Gifs.t'
+import { useRef, useState } from 'react'
 import GiphySVG from './svg/GiphySVG'
-
-const apiKey = import.meta.env.VITE_API_KEY
-const BASE_URL = 'https://api.giphy.com/v1/gifs/'
+import useGiphy from './hooks/useGiphy'
 
 export default function App () {
-  const [search, setSearch] = useState<string | undefined>(undefined)
-  const [gifs, setGifs] = useState<Daum[] | null>(null)
+  const [search, setSearch] = useState<string | undefined>()
+  const input = useRef<HTMLInputElement | null>(null)
 
-  useEffect(() => {
-    const searchGifs = async () => {
-      const result = await fetch(`${BASE_URL}trending?api_key=${apiKey}&limit=25&offset=0&rating=g&bundle=messaging_non_clips`)
-      const res = await result.json() as GifsTypes
-
-      setGifs(res.data)
-    }
-
-    searchGifs()
-  }, [])
+  const { gifs } = useGiphy({ search })
 
   const handleSudmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const response = await fetch(`${BASE_URL}search?api_key=${apiKey}&limit=25&offset=0&rating=g&bundle=messaging_non_clips&q=${search}`)
-    const res = await response.json() as GifsTypes
-    setGifs(res.data)
+    setSearch(input.current?.value)
   }
 
   return (
@@ -38,7 +24,7 @@ export default function App () {
           <GiphySVG />
         </div>
         <form className="w-96 flex gap-2 p-2" onSubmit={handleSudmit}>
-          <input type="text" placeholder="Search for all GIFs" className="w-full px-4 py-2 rounded-xl text-black" onChange={(event) => { setSearch(event.target.value) }} value={search} />
+          <input ref={input} type="text" placeholder="Search for all GIFs" className="w-full px-4 py-2 rounded-xl text-black" />
           <button className="bg-gradient-to-br from-purple-600 to-blue-500 p-4 rounded-full">
             <FaSearch />
           </button>
